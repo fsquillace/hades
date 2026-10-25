@@ -1,0 +1,4 @@
+alias aiexec="aichat -e"
+
+alias pacman="pacman --color auto"
+

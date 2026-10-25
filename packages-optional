@@ -1,0 +1,27 @@
+####################
+### Basic tools
+####################
+curl
+less
+man-db
+openssh
+tar
+unzip
+wget
+zip
+
+####################
+### Productivity tools
+####################
+btop
+exa
+fastfetch
+fd
+fzf
+github-cli
+jq
+lazygit
+neovim
+ripgrep
+starship
+zoxide
