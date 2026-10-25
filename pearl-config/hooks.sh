@@ -38,15 +38,23 @@ function post_install() {
     sudo pacman --noconfirm -S base-devel
 
     _herdr
+    if ask "Proceed with Hermes setup/update? (may take some time)" "N"
+    then
+        _hermes
+        # Herdr hermes integration requires to install hermes first:
+	    herdr integration install hermes
+    fi
 
     return 0
+}
+
+function _hermes() {
+    curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
 }
 
 function _herdr() {
     mise use -g herdr
     herdr integration install opencode
-    # The following requires to install hermes first:
-    # herdr integration install hermes
 }
 
 function pre_update() {
