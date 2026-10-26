@@ -29,14 +29,6 @@ function post_install() {
     sudo pacman --noconfirm -Syu
     sudo pacman --noconfirm -Sy $(grep -vE '^[[:space:]]*#' $PEARL_PKGDIR/packages | xargs)
 
-    if ask "Do you want to install optional Productivity Tools?" "N"
-    then
-        sudo pacman --noconfirm -Sy $(grep -vE '^[[:space:]]*#' $PEARL_PKGDIR/packages-optional | xargs)
-    fi
-
-    # base-devel is essential for building AUR packages
-    sudo pacman --noconfirm -S base-devel
-
     _herdr
     if ask "Proceed with Hermes setup/update? (may take some time)" "N"
     then
@@ -45,7 +37,20 @@ function post_install() {
 	    herdr integration install hermes
     fi
 
+    if ask "Do you want to install optional Productivity Tools?" "N"
+    then
+        sudo pacman --noconfirm -Sy $(grep -vE '^[[:space:]]*#' $PEARL_PKGDIR/packages-optional | xargs)
+        _omarchy
+    fi
+
+
     return 0
+}
+
+function _omarchy() {
+    # Omarchy PKGBUILD source repository here: https://github.com/omacom/omarchy-pkgs
+    sudo pacman --noconfirm --config $PEARL_PKGDIR/configs/omarchy/pacman.conf -Sy $(grep -vE '^[[:space:]]*#' $PEARL_PKGDIR/packages-omarchy | xargs)
+    omarchy-nvim-setup
 }
 
 function _hermes() {

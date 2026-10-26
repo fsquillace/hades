@@ -6,6 +6,8 @@ Hades is a [Pearl](https://github.com/pearl-core/pearl) package that turns a fre
 
 No desktop environment, no Electron apps, no manual setup checklist. Install one package, add your model credentials, and start working.
 
+Hades also works as a minimal, ready-to-use platform inside **WSL** with an Arch Linux distro, so Windows users can get the same terminal-first agent setup without a full Linux desktop.
+
 ---
 
 ## Why Hades?
@@ -15,7 +17,9 @@ Setting up a useful AI-assisted development environment usually means installing
 - **Lightweight** — terminal-native tools only; herdr is a single Rust binary.
 - **Minimal** — a small, opinionated package set instead of a full distro.
 - **AI-first** — the four tools below share one workspace and one shell workflow.
-- **Arch-native** — packages come from the official repositories; the system stays simple to update.
+- **Arch-native** — core packages come from the official repositories; the system stays simple to update.
+- **Omarchy extras, on demand** — install packages from the Omarchy repository with `pacboy` without adopting Omarchy itself.
+- **WSL-ready** — the same minimal platform runs inside an Arch Linux WSL distro on Windows.
 - **Reproducible** — everything is declared in version-controlled package lists and Pearl hooks.
 
 ---
@@ -47,6 +51,8 @@ Setting up a useful AI-assisted development environment usually means installing
 
 herdr is the home base. You run opencode for hands-on coding, Hermes for planning and unattended work, and aichat whenever you just need the right shell command.
 
+**opencode is the default coding agent, not a lock-in.** You can install and use any of the agents listed in the [Omarchy AI manual](https://omarchy.org/manual/ai/) — Claude Code, Codex, Google Antigravity, Amp, Crush, Cursor CLI, Qwen Code, and many more — and use them in place of, or alongside, opencode.
+
 ---
 
 ## What gets installed
@@ -60,9 +66,8 @@ Installed automatically by the Pearl hook:
 - `mise` — runtime and tool version manager
 - `aichat`
 - `opencode`
-- `herdr` — installed globally through `mise`
-- `hermes` - distributed through its own installer into `~/.hermes`
-- The `opencode` and `hermes` integration for herdr
+- `herdr` — installed globally through `mise` and with default opencode and hermes integration
+- `hermes` - distributed through its own installer into `~/.hermes`.
 
 ### Optional productivity tools
 
@@ -70,13 +75,19 @@ Offered as a prompt during installation (default: no):
 
 - **Shell and navigation:** `fzf`, `zoxide`, `starship`, `exa`, `fd`, `ripgrep`
 - **Editing and Git:** `neovim`, `lazygit`, `github-cli`
-- **Utilities:** `btop`, `fastfetch`, `jq`, `curl`, `wget`, `tar`, `zip`, `unzip`, `less`, `man-db`, `openssh`
+- **Utilities:** `btop`, `fastfetch`, `jq`, `curl`, `wget`, `tar`, `zip`, `unzip`, `less`, `man-db`, `openssh`, `yay`
+- **Omarchy Neovim support:** 
+
+### Omarchy extras
+
+These come from the Omarchy package repository via `pacboy`, not from the official Arch repositories. See [Omarchy packages and AI agents](#omarchy-packages-and-ai-agents).
 
 ---
 
 ## Requirements
 
 - **Arch Linux** (the package uses `pacman` directly).
+- **Or an Arch Linux WSL distro** — Hades works as a minimal ready platform inside WSL on Windows. Install the Arch Linux distro, open its shell, and follow the same steps below.
 - **sudo** access. The install hook updates the system, installs packages, and refreshes the keyring.
 - **Network access** to the Arch mirrors and the herdr download source.
 - Pearl's own dependencies: `python`, `bash >= 4.1`, `git`.
@@ -109,9 +120,9 @@ PEARL_PACKAGES['hades'] = {"url": "https://github.com/fsquillace/hades.git"}
 pearl install hades
 ```
 
-The hook will refresh the Arch keyring, upgrade the system, install the core packages, prompt for the optional productivity set, set up herdr and hermes.
+The hook will refresh the Arch keyring, upgrade the system, install the core packages, set up herdr, optionally set up Hermes, and optionally prompt for the productivity set plus the Omarchy extras.
 
-### 4. Connect your models
+### 3. Connect your models
 
 Each tool authenticates independently. Configure the ones you plan to use:
 
@@ -181,9 +192,39 @@ Included aliases:
 ```bash
 aiexec="aichat -e"      # natural language → executable command
 pacman="pacman --color auto"
+pacboy="pacman --config $PEARL_PKGDIR/configs/omarchy/pacman.conf"
 ls="eza"                # when eza is installed
 cd="z"                  # when zoxide is installed
 ```
+
+`pacboy` is the enhanced `pacman` entry point that also sees the Omarchy repository. See [Omarchy packages and AI agents](#omarchy-packages-and-ai-agents) for usage.
+
+---
+
+## Omarchy packages and AI agents
+
+Hades borrows the useful, agentic parts of [Omarchy](https://omarchy.org) without the desktop. You get its package repository and its agent ecosystem while keeping a minimal, terminal-first system.
+
+### Install Omarchy packages with `pacboy`
+
+Hades ships a dedicated pacman configuration in [`configs/omarchy/pacman.conf`](configs/omarchy/pacman.conf) and exposes it through the `pacboy` alias:
+
+```bash
+pacboy -Ss <query>      # search Arch + Omarchy packages
+pacboy -S <package>     # install a package from the Omarchy repository
+```
+
+`pacboy` is an enhanced `pacman`: it includes the official `core` and `extra` repositories plus the `omarchy` repository, so any package published in the [omarchy-pkgs PKGBUILDs](https://github.com/omacom/omarchy-pkgs/tree/master/pkgbuilds) can be installed from the same command line.
+
+### Use any Omarchy coding agent
+
+opencode is only the default. You can install and use any of the coding agents catalogued in the [Omarchy AI manual](https://omarchy.org/manual/ai/) as a replacement — Claude Code (`claude`), OpenAI Codex (`codex`), Google Antigravity (`agy`), Amp, Command Code, GitHub Copilot CLI, Crush, Cursor CLI, Devin, DeepSeek Harness, Freebuff, Grok, Hermes, Kilo, Kimi, Kiro CLI, MiniMax Code, Muse Code, Oh My Pi, Ori, Pi, and Qwen Code. Install your preferred agent with its upstream installer, `mise`, or `pacboy` when an Omarchy package exists, authenticate it, and run it inside a herdr pane just like opencode.
+
+Hades preconfigures the herdr integrations for opencode and Hermes, but the rest of the stack is agent-agnostic: your shell, aliases, and workspace do not change when you switch agents.
+
+### Not an Omarchy replacement
+
+Hades is **not** meant to replace Omarchy. Omarchy is a full, opinionated desktop built around Hyprland, themes, and visual polish. Hades deliberately leaves that out. It is for anyone who wants the agentic side of Omarchy — its package repository, its coding agents, and its Nvim setup — without the aesthetics and bloat of a full desktop environment.
 
 ---
 
@@ -198,4 +239,6 @@ cd="z"                  # when zoxide is installed
 
 ## License
 
-GPLv2
+Hades is free software released under the **GNU General Public License, version 2 (GPL-2.0)**.
+
+You can redistribute it and/or modify it under the terms of the GPL v2 as published by the Free Software Foundation. See the [full GPL-2.0 license text](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html) for details. Hades is distributed in the hope that it will be useful, but **without any warranty**, including the implied warranties of merchantability or fitness for a particular purpose.

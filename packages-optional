@@ -24,4 +24,6 @@ lazygit
 neovim
 ripgrep
 starship
+# XDG needed for Omarchy Neovim setup
+xdg-utils
 zoxide

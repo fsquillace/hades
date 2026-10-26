@@ -1,4 +1,6 @@
 alias aiexec="aichat -e"
 
+# Allows to keep aliases in sudo
+alias sudo="sudo "
 alias pacman="pacman --color auto"
-
+alias pacboy="pacman --config $PEARL_PKGDIR/configs/omarchy/pacman.conf"

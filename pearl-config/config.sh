@@ -7,8 +7,6 @@
 # - *PEARL_PKGDIR*      - Pearl package location
 # - *PEARL_PKGVARDIR*   - Pearl package var location
 
-
-
 add_to_path $HOME/.local/bin
 
 source "$PEARL_PKGDIR/configs/aliases"
