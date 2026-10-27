@@ -34,4 +34,7 @@ function y
 	end
 	command rm -f -- "$tmp"
 end
+
+[ -e /usr/bin/nvim ]; and set -x EDITOR nvim
+[ -e /usr/bin/nvim ]; and set -x VISUAL nvim
 # vim: ft=sh

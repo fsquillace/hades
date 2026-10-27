@@ -23,4 +23,7 @@ function y() {
 	command rm -f -- "$tmp"
 }
 
+
+[ -e /usr/bin/nvim ] && { export EDITOR=nvim; export VISUAL=nvim; }
+
 # vim: ft=sh
