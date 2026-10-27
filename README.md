@@ -75,8 +75,8 @@ Offered as a prompt during installation (default: no):
 
 - **Shell and navigation:** `fzf`, `zoxide`, `starship`, `exa`, `fd`, `ripgrep`
 - **Editing and Git:** `neovim`, `lazygit`, `github-cli`
-- **Utilities:** `btop`, `fastfetch`, `jq`, `curl`, `wget`, `tar`, `zip`, `unzip`, `less`, `man-db`, `openssh`, `yay`
-- **Omarchy Neovim support:** 
+- **Utilities:** `btop`, `fastfetch`, `jq`, `curl`, `wget`, `tar`, `zip`, `unzip`, `less`, `man-db`, `openssh`, `yay`, `yazi`
+- **[Omarchy Neovim](https://omarchy.org/manual/neovim/) support:** - uses LazyVim.
 
 ### Omarchy extras
 
@@ -108,6 +108,8 @@ pearl init
 
 `pearl init` will make Pearl available to bash, zsh and fish shells.
 
+- Open a new shell to have all Pearl variables initialized correctly
+
 ### 2. Install Hades
 
 - Add Hades to your Pearl configuration at `~/.config/pearl/pearl.conf`:
@@ -119,10 +121,15 @@ PEARL_PACKAGES['hades'] = {"url": "https://github.com/fsquillace/hades.git"}
 ```bash
 pearl install hades
 ```
+- Open a new shell or simply run `pearl-source` to the existing one to have all functions and variables initialized.
 
-The hook will refresh the Arch keyring, upgrade the system, install the core packages, set up herdr, optionally set up Hermes, and optionally prompt for the productivity set plus the Omarchy extras.
+The Pearl hook will refresh the Arch keyring, upgrade the system, install the core packages, set up herdr, optionally set up Hermes, and optionally prompt for the productivity set plus the Omarchy extras.
 
-### 3. Connect your models
+### 3. (Optional but highly recommended) Install a NerdFont
+
+- In order to have the terminal (Windows Terminal for WSL, foot, Ghostty, Kitty, etc) of your choice being able to draw custom glyphs from Hades programs (yazi, lazygit, starship, etc) it is highly recommended to install any of the [NerdFont](https://www.nerdfonts.com/) of your choice.
+
+### 4. Connect your models
 
 Each tool authenticates independently. Configure the ones you plan to use:
 
@@ -153,6 +160,9 @@ aiexec show disk usage grouped by folder
 
 # Aichat shell integration: Ask for a shell command in plain language and press Alt-e, it will translate into a real command directly from shell
 find the largest files in this directory <Alt-e>
+
+# Install packages in Omarchy repository
+sudo pacboy -Sy claude-code
 ```
 
 To learn more about the aichat shell integration [here](https://github.com/sigoden/aichat/wiki/Command-Line-Guide?utm_source=chatgpt.com#shell-integration).
