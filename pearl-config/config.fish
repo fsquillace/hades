@@ -21,6 +21,17 @@ mise activate fish | source
 source /usr/share/aichat/integration.fish
 
 source $PEARL_PKGDIR/configs/aliases
-[ -e /usr/bin/eza ]; and alias ls="eza"
-[ -e /usr/bin/z ]; and alias cd="z"
+[ -e /usr/bin/eza ]; and alias ls="eza --icons=auto --group-directories-first --color=auto"
+[ -e /usr/bin/zoxide ]; and alias cd="z"
+
+
+# https://yazi-rs.github.io/docs/quick-start#shell-wrapper
+function y
+	set tmp (mktemp -t "yazi-cwd.XXXXXX")
+	command yazi $argv --cwd-file="$tmp"
+	if read -z cwd < "$tmp"; and [ "$cwd" != "$PWD" ]; and test -d "$cwd"
+		builtin cd -- "$cwd"
+	end
+	command rm -f -- "$tmp"
+end
 # vim: ft=sh

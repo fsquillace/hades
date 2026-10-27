@@ -13,17 +13,23 @@ zip
 ####################
 ### Productivity tools
 ####################
+7zip
 btop
 exa
 fastfetch
 fd
+ffmpeg
 fzf
 github-cli
+imagemagick
 jq
 lazygit
 neovim
+poppler
+resvg
 ripgrep
 starship
 # XDG needed for Omarchy Neovim setup
 xdg-utils
+yazi
 zoxide
