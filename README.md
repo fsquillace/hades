@@ -114,12 +114,14 @@ pearl init
 
 ### 2. Install Hades
 
-- Add Hades to your Pearl configuration at `~/.config/pearl/pearl.conf`:
+- Add new Pearl repo index to your Pearl configuration at `~/.config/pearl/pearl.conf`:
 
 ```bash
-PEARL_PACKAGES['hades'] = {"url": "https://github.com/fsquillace/hades.git"}
+PEARL_REPOS += ("https://github.com/fsquillace/pearl-repo.git", )
 ```
+
 - Install `hades`
+
 ```bash
 pearl install hades
 ```
