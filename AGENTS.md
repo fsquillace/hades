@@ -5,11 +5,14 @@ Hades is a [Pearl](https://github.com/pearl-core/pearl) package for Arch Linux, 
 ## Layout and entrypoints
 
 - `pearl-config/hooks.sh` — install/update logic. `post_update` calls `post_install`, so both must stay idempotent.
-- `packages` — installed unconditionally. `packages-optional` — prompt-gated productivity tools. `packages-omarchy` — prompt-gated Omarchy extras.
+- `packages/main` — installed unconditionally (base tools: `base-devel`, `git`, `mise`, `yay`; AI tools: `aichat`, `opencode`, `herdr`, `herdr-app`).
+- `packages/optional` — prompt-gated productivity tools, including `omarchy-nvim`.
+- `packages/wsl` — installed only when WSL is detected (`grep` on `/proc/version` in `_wsl`).
+- `packages/fonts` — installed unconditionally, followed by `fc-cache -f`.
 - `configs/aliases` — shared aliases. Pearl sources `config.sh` for Bash and Zsh; Fish only sources `config.fish`, so it sources `configs/aliases` separately.
 - Put shared Bash/Zsh startup logic in `config.sh`; shell-specific logic goes in `config.bash`/`config.zsh`. Fish never reads `config.sh`.
-- `configs/omarchy/pacman.conf` — standalone pacman config used only by `pacboy`; it must keep `[core]` and `[extra]` as well as `[omarchy]`.
-- `configs/herdr-config.toml` — reference only; the hook does not install it.
+- `configs/pacman.conf` — standalone pacman config used by the `_pacman` wrapper for every hook install (core, optional, WSL, fonts); it must keep `[core]` and `[extra]` as well as `[omarchy]`. `pacboy` points to the same file.
+- `configs/herdr-app-keys.json` — herdr-app keybindings. The `_herdr` hook copies both it and the herdr config into place.
 - `pearl-config/config.el` and `config.vim` are empty placeholders. `pearl-config/package.conf` is entirely commented out (no metadata is published).
 - `README.md` is the user-facing contract; update it when packages, aliases, prompts, or Omarchy behavior change.
 
@@ -17,16 +20,18 @@ Hades is a [Pearl](https://github.com/pearl-core/pearl) package for Arch Linux, 
 
 - One package per line; comments only as whole lines starting with `#`.
 - Hooks parse lists as `grep -vE '^[[:space:]]*#' FILE | xargs`. Trailing/inline comments become package names, so never add them.
-- Add core tools to `packages`, general optional tools to `packages-optional`, and packages from the Omarchy repo to `packages-omarchy`.
-- Omarchy extras are installed only when the optional-products prompt is accepted. `_omarchy` then runs `omarchy-nvim-setup`.
-- `herdr` is installed with `mise use -g herdr`; Hermes with its upstream installer. They are not package-list entries.
+- Add base/AI tools to `packages/main`, general productivity tools to `packages/optional` (Omarchy packages like `omarchy-nvim` live here too), WSL-only packages to `packages/wsl`, and fonts to `packages/fonts`.
+- `omarchy-nvim` is part of the optional set; when the optional-products prompt is accepted, `_omarchy_nvim` runs `omarchy-nvim-setup` after the packages install.
+- All hook installs go through `_pacman` (`sudo pacman --noconfirm --config "$PEARL_PKGDIR/configs/pacman.conf"`), not plain `pacman`. Since `sudo` does not expand aliases, privileged installs cannot use the `pacboy` alias — reuse `_pacman` or write the explicit config.
+- `herdr`, `herdr-app`, and `opencode` are plain pacman packages from `packages/main`. Hermes is the exception: it is installed with its upstream installer into `~/.hermes` and is not a package-list entry.
 - `[omarchy]` deliberately uses `SigLevel = Never` (unsigned binary repo). Do not "fix" it without verifying the repo's signing setup.
-- `pacboy` = `pacman --config "$PEARL_PKGDIR/configs/omarchy/pacman.conf"`. Since `sudo` does not expand aliases, privileged installs need the explicit config (`sudo pacman --config ... -S ...`).
 
 ## Hook constraints
 
 - Never run `post_install` (or `pearl install`/`pearl update`) to test: it calls `sudo pacman -Syu`, prompts interactively, and mutates the system.
-- Preserve install order: keyring refresh -> full upgrade -> core packages -> herdr -> Hermes prompt -> optional tools + Omarchy extras.
+- Preserve install order: keyring refresh -> full upgrade -> main packages -> `_wsl` (detection + WSL packages) -> `_fonts` + `fc-cache` -> `_herdr` (configs + keybindings + opencode integration) -> Hermes prompt (installer, then `herdr integration install hermes`) -> optional tools prompt (`_omarchy_nvim` afterwards).
+- `_herdr` overwrites live config files (`~/.config/herdr/config.toml`, `~/.config/herdr-app/keys.json`); always keep the existing `backup` calls before the `cp`, and modify the package-side copies (`configs/herdr-config.toml`, `configs/herdr-app-keys.json`), not the user's files.
+- The `herdr-app` alias excludes `WAYLAND_DISPLAY` to route WSLg through XWayland (known WSLg bug); keep it when touching aliases.
 - Use `$PEARL_PKGDIR`; do not hardcode repo paths. Keep the existing `function name()` shell style.
 - Hooks assume Arch Linux (or an Arch WSL distro), `pacman`, and `sudo`.
 
@@ -41,7 +46,7 @@ bash -n pearl-config/config.bash
 zsh -n pearl-config/config.zsh              # when zsh is installed
 fish --no-execute pearl-config/config.fish  # when fish is installed
 git diff --check
-grep -vE '^[[:space:]]*#' packages packages-optional packages-omarchy
+grep -vE '^[[:space:]]*#' packages/main packages/optional packages/wsl packages/fonts
 ```
 
 License: GPL-2.0 (declared in `README.md`; no `LICENSE` file yet).

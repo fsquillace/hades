@@ -23,7 +23,32 @@ function y() {
 	command rm -f -- "$tmp"
 }
 
+# https://superfile.dev/configure/superfile-config/
+s() {
+    os=$(uname -s)
+
+    # Linux
+    if [[ "$os" == "Linux" ]]; then
+        export SPF_LAST_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/superfile/lastdir"
+    fi
+
+    # macOS
+    if [[ "$os" == "Darwin" ]]; then
+        export SPF_LAST_DIR="$HOME/Library/Application Support/superfile/lastdir"
+    fi
+
+    command spf "$@"
+
+    [ ! -f "$SPF_LAST_DIR" ] || {
+        . "$SPF_LAST_DIR"
+        rm -f -- "$SPF_LAST_DIR" > /dev/null
+    }
+}
 
 [ -e /usr/bin/nvim ] && { export EDITOR=nvim; export VISUAL=nvim; }
 
+
+# https://wiki.archlinux.org/title/Install_Arch_Linux_on_WSL#Run_graphical_applications_with_WSLg
+export GALLIUM_DRIVER=d3d12
+export LIBVA_DRIVER_NAME=d3d12
 # vim: ft=sh

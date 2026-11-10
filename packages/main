@@ -1,0 +1,15 @@
+####################
+### Basic tools
+####################
+base-devel
+git
+mise
+yay
+
+####################
+### AI tools
+####################
+aichat
+herdr
+herdr-app
+opencode

@@ -1,12 +1,13 @@
 ####################
 ### Basic tools
 ####################
-base-devel
-git
-mise
+fontconfig
 
 ####################
-### AI tools
+# Main Fonts
 ####################
-aichat
-opencode
+ttf-liberation
+ttf-dejavu
+noto-fonts
+cantarell-fonts
+ttf-ubuntu-font-family

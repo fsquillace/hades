@@ -25,6 +25,7 @@ imagemagick
 jq
 lazygit
 neovim
+omarchy-nvim
 poppler
 resvg
 ripgrep

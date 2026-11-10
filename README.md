@@ -17,9 +17,9 @@ Setting up a useful AI-assisted development environment usually means installing
 - **Lightweight** — terminal-native tools only; herdr is a single Rust binary.
 - **Minimal** — a small, opinionated package set instead of a full distro.
 - **AI-first** — the four tools below share one workspace and one shell workflow.
-- **Arch-native** — core packages come from the official repositories; the system stays simple to update.
+- **Arch-native** — packages come from the official repositories; the system stays simple to update.
 - **Omarchy extras, on demand** — install packages from the Omarchy repository with `pacboy` without adopting Omarchy itself.
-- **WSL-ready** — the same minimal platform runs inside an Arch Linux WSL distro on Windows.
+- **WSL-ready** — the same minimal platform runs inside an Arch Linux WSL distro on Windows, with graphical support packages installed automatically.
 - **Reproducible** — everything is declared in version-controlled package lists and Pearl hooks.
 
 ---
@@ -59,28 +59,30 @@ herdr is the home base. You run opencode for hands-on coding, Hermes for plannin
 
 ### Core
 
-Installed automatically by the Pearl hook:
+Installed automatically from [`packages/main`](packages/main):
 
-- `base-devel` — required for building AUR packages
-- `git`
-- `mise` — runtime and tool version manager
-- `aichat`
-- `opencode`
-- `herdr` — installed globally through `mise` and with default opencode and hermes integration
-- `hermes` - distributed through its own installer into `~/.hermes`.
+- **Base tools** — `base-devel`, `git`, `mise`, `yay`
+- **AI tools** — `aichat`, `opencode`, `herdr`, `herdr-app`
+- **Hermes** — offered as a prompt during installation; distributed through its own installer into `~/.hermes`.
+
+### Fonts
+
+Installed automatically from [`packages/fonts`](packages/fonts): basic font families (`liberation`, `dejavu`, `noto`, `cantarell`, `ubuntu`) plus `fontconfig`, with the font cache refreshed after install.
+
+### WSL only
+
+Installed automatically from [`packages/wsl`](packages/wsl) when WSL is detected: `mesa`, `vulkan-dzn`, and `vulkan-icd-loader`, which enable graphical applications through WSLg.
 
 ### Optional productivity tools
 
-Offered as a prompt during installation (default: no):
+Installed from [`packages/optional`](packages/optional) when the installation prompt is accepted (default: no):
 
-- **Shell and navigation:** `fzf`, `zoxide`, `starship`, `exa`, `fd`, `ripgrep`
+- **Shell and navigation:** `fzf`, `zoxide`, `starship`, `eza`, `fd`, `ripgrep`
 - **Editing and Git:** `neovim`, `lazygit`, `github-cli`
-- **Utilities:** `btop`, `fastfetch`, `jq`, `curl`, `wget`, `tar`, `zip`, `unzip`, `less`, `man-db`, `openssh`, `yay`, `yazi`
-- **[Omarchy Neovim](https://omarchy.org/manual/neovim/) support:** - uses LazyVim.
+- **Utilities:** `btop`, `fastfetch`, `jq`, `yazi`, `7zip`, `ffmpeg`, `imagemagick`, `poppler`, `resvg`, and more
+- **[Omarchy Neovim](https://omarchy.org/manual/neovim/):** a LazyVim-based setup, configured via `omarchy-nvim-setup`
 
-### Omarchy extras
-
-These come from the Omarchy package repository via `pacboy`, not from the official Arch repositories. See [Omarchy packages and AI agents](#omarchy-packages-and-ai-agents).
+All packages are installed through a dedicated pacman configuration ([`configs/pacman.conf`](configs/pacman.conf)) that also contains the Omarchy repository — see [Omarchy packages and AI agents](#omarchy-packages-and-ai-agents).
 
 ---
 
@@ -123,13 +125,25 @@ pearl install hades
 ```
 - Open a new shell or simply run `pearl-source` to the existing one to have all functions and variables initialized.
 
-The Pearl hook will refresh the Arch keyring, upgrade the system, install the core packages, set up herdr, optionally set up Hermes, and optionally prompt for the productivity set plus the Omarchy extras.
+The Pearl hook will, in order: refresh the Arch keyring → run a full system upgrade → install the core packages → install the WSL graphical packages (WSL only) → install the fonts and refresh the font cache → install the herdr configuration and keybindings and register the opencode integration → optionally set up Hermes (registering its herdr integration) → optionally install the productivity tools including Omarchy Neovim.
 
 ### 3. (Optional but highly recommended) Install a NerdFont
 
-- In order to have the terminal (Windows Terminal for WSL, foot, Ghostty, Kitty, etc) of your choice being able to draw custom glyphs from Hades programs (yazi, lazygit, starship, etc) it is highly recommended to install any of the [NerdFont](https://www.nerdfonts.com/) of your choice.
+- In order to have the terminal (Windows Terminal for WSL, foot, Ghostty, Kitty, etc) of your choice being able to draw custom glyphs from Hades programs (yazi, lazygit, starship, etc) it is highly recommended to install any of the [NerdFont](https://www.nerdfonts.com/) of your choice. Hades cannot install fonts into your terminal application for you.
 
 ### 4. Connect your models
+
+#### 4.1 Explore from the [Bench LM Leaderboard](https://benchlm.ai) the LLMs to use
+
+Some advices: 
+  - OpenCode Plan -> Use a model from the leaderboard with high [Reasoning score](https://benchlm.ai/?sort=cat_reasoning)
+  - OpenCode Build -> Use a model from the leaderboard with high [Coding score](https://benchlm.ai/?sort=cat_coding)
+  - Hermes -> Use a model from the leaderboard with high [Agentic score](https://benchlm.ai/?sort=cat_agentic)
+  - AIChat -> Use a model from the leaderboard with high [Coding/Reasoning score](https://benchlm.ai)
+
+Alternative leaderboards: [Artificial Analysis](https://artificialanalysis.ai/leaderboards/models), [WhatLLM.org](https://whatllm.org/explore).
+
+#### 4.2 Setup your models
 
 Each tool authenticates independently. Configure the ones you plan to use:
 
@@ -149,6 +163,9 @@ For aichat, add at least one provider to `~/.config/aichat/config.yaml` — see 
 # Start the agent workspace
 herdr
 
+# Or its GUI companion (already routed through XWayland when needed)
+herdr-app
+
 # Run the coding agent inside a pane
 opencode
 
@@ -167,23 +184,17 @@ sudo pacboy -Sy claude-code
 
 To learn more about the aichat shell integration [here](https://github.com/sigoden/aichat/wiki/Command-Line-Guide?utm_source=chatgpt.com#shell-integration).
 
-### herdr basics
+### herdr and herdr-app
 
-Hades ships a reference herdr configuration in [`configs/herdr-config.toml`](configs/herdr-config.toml):
+Hades installs and activates both `herdr` (the terminal workspace) and `herdr-app` (its GUI companion). The hook does all the configuration for you:
 
-- `ctrl+space` as the prefix key
-- Gruvbox theme
-- System toast notifications
-- Onboarding skipped
+- Copies the reference herdr configuration ([`configs/herdr-config.toml`](configs/herdr-config.toml)) to `~/.config/herdr/config.toml` — tmux-style `ctrl+space` prefix, Gruvbox theme, system toast notifications.
+- Copies custom predefined keybindings `~/.config/herdr-app/keys.json` — Allows to have similar keybinding experience as the herdr TUI.
+- Registers the opencode integration so agents run inside the workspace (and the hermes integration when Hermes is installed).
 
-Hades does not automate installation of this file (for now). If you want it, just copy it into place after installing:
+Any pre-existing configuration file is backed up first, so re-running `pearl update` never silently discards your changes.
 
-```bash
-mkdir -p "$HOME/.config/herdr"
-cp configs/herdr-config.toml "$HOME/.config/herdr/config.toml"
-```
-
-From there, `herdr` opens the workspace, `ctrl+space` is your tmux-style prefix, and agents keep running when you detach or lose an SSH connection.
+From there, `herdr` opens the workspace, `ctrl+space` is your tmux-style prefix, and agents keep running when you detach or lose an SSH connection. On WSL, launch the graphical version with `herdr-app` — the alias routes it through XWayland to work around a WSLg Wayland bug.
 
 ---
 
@@ -202,7 +213,8 @@ Included aliases:
 ```bash
 aiexec="aichat -e"      # natural language → executable command
 pacman="pacman --color auto"
-pacboy="pacman --config $PEARL_PKGDIR/configs/omarchy/pacman.conf"
+pacboy="pacman --config $PEARL_PKGDIR/configs/pacman.conf"
+herdr-app="env -u WAYLAND_DISPLAY herdr-app"   # WSLg Wayland workaround
 ls="eza"                # when eza is installed
 cd="z"                  # when zoxide is installed
 ```
@@ -217,7 +229,7 @@ Hades borrows the useful, agentic parts of [Omarchy](https://omarchy.org) withou
 
 ### Install Omarchy packages with `pacboy`
 
-Hades ships a dedicated pacman configuration in [`configs/omarchy/pacman.conf`](configs/omarchy/pacman.conf) and exposes it through the `pacboy` alias:
+Hades ships a dedicated pacman configuration in [`configs/pacman.conf`](configs/pacman.conf) and exposes it through the `pacboy` alias:
 
 ```bash
 pacboy -Ss <query>      # search Arch + Omarchy packages

@@ -27,7 +27,10 @@ function post_install() {
     sudo pacman-key --populate archlinux
     # Install packages
     sudo pacman --noconfirm -Syu
-    sudo pacman --noconfirm -Sy $(grep -vE '^[[:space:]]*#' $PEARL_PKGDIR/packages | xargs)
+    _pacman -Sy $(grep -vE '^[[:space:]]*#' $PEARL_PKGDIR/packages/main | xargs)
+
+    _wsl
+    _fonts
 
     _herdr
     if ask "Proceed with Hermes setup/update? (may take some time)" "N"
@@ -39,17 +42,33 @@ function post_install() {
 
     if ask "Do you want to install optional Productivity Tools?" "N"
     then
-        sudo pacman --noconfirm -Sy $(grep -vE '^[[:space:]]*#' $PEARL_PKGDIR/packages-optional | xargs)
-        _omarchy
+        _pacman -Sy $(grep -vE '^[[:space:]]*#' $PEARL_PKGDIR/packages/optional | xargs)
+        _omarchy_nvim
     fi
 
 
     return 0
 }
 
-function _omarchy() {
-    # Omarchy PKGBUILD source repository here: https://github.com/omacom/omarchy-pkgs
-    sudo pacman --noconfirm --config $PEARL_PKGDIR/configs/omarchy/pacman.conf -Sy $(grep -vE '^[[:space:]]*#' $PEARL_PKGDIR/packages-omarchy | xargs)
+function _pacman() {
+    sudo pacman --noconfirm --config $PEARL_PKGDIR/configs/pacman.conf "$@"
+}
+
+function _wsl() {
+    if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null ; then
+        info "Detected WSL environment, installing wsl packages..."
+        _pacman -Sy $(grep -vE '^[[:space:]]*#' $PEARL_PKGDIR/packages/wsl | xargs)
+    fi
+}
+
+function _fonts() {
+    info "Installing fonts..."
+    _pacman -Sy $(grep -vE '^[[:space:]]*#' $PEARL_PKGDIR/packages/fonts | xargs)
+    sudo fc-cache -f
+}
+
+function _omarchy_nvim() {
+    # Omarchy PKGBUILD source repository are here: https://github.com/omacom/omarchy-pkgs
     omarchy-nvim-setup
 }
 
@@ -58,7 +77,11 @@ function _hermes() {
 }
 
 function _herdr() {
-    mise use -g herdr
+    backup "$HOME/.config/herdr-app/keys.json"
+    cp "$PEARL_PKGDIR/configs/herdr-app-keys.json" "$HOME/.config/herdr-app/keys.json"
+
+    backup "$HOME/.config/herdr/config.toml"
+    cp "$PEARL_PKGDIR/configs/herdr-config.toml" "$HOME/.config/herdr/config.toml"
     herdr integration install opencode
 }
 

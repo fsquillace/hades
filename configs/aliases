@@ -1,10 +1,14 @@
 alias aiexec="aichat -e"
 
+# Activate XWayland for now as there is a bug with Wayland in WSLg that causes some GUI applications to not work properly during selection:
+# https://github.com/microsoft/wslg/issues/1523
+alias herdr-app='env -u WAYLAND_DISPLAY herdr-app'
+
 # Allows to keep aliases in sudo
 alias sudo="sudo "
 
 alias pacman="pacman --color auto"
-alias pacboy="pacman --config $PEARL_PKGDIR/configs/omarchy/pacman.conf"
+alias pacboy="pacman --config $PEARL_PKGDIR/configs/pacman.conf"
 
 alias ..="cd .."
 alias ...="cd ../.."
