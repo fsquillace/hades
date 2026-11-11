@@ -21,9 +21,6 @@ mise activate fish | source
 source /usr/share/aichat/integration.fish
 
 source $PEARL_PKGDIR/configs/aliases
-[ -e /usr/bin/eza ]; and alias ls="eza --icons=auto --group-directories-first --color=auto"
-[ -e /usr/bin/zoxide ]; and alias cd="z"
-
 
 # https://yazi-rs.github.io/docs/quick-start#shell-wrapper
 function y

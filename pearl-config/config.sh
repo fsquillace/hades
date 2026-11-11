@@ -10,9 +10,6 @@
 add_to_path $HOME/.local/bin
 
 source "$PEARL_PKGDIR/configs/aliases"
-[ -e /usr/bin/eza ] && alias ls="eza --icons=auto --group-directories-first --color=auto"
-[ -e /usr/bin/zoxide ] && alias cd="z"
-
 
 # https://yazi-rs.github.io/docs/quick-start#shell-wrapper
 function y() {

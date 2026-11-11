@@ -129,6 +129,12 @@ pearl install hades
 
 The Pearl hook will, in order: refresh the Arch keyring → run a full system upgrade → install the core packages → install the WSL graphical packages (WSL only) → install the fonts and refresh the font cache → install the herdr configuration and keybindings and register the opencode integration → optionally set up Hermes (registering its herdr integration) → optionally install the productivity tools including Omarchy Neovim.
 
+- (Optional but highly recommended) Install additional Pearl packages:
+
+```bash
+pearl install sesaila dot-bash
+```
+
 ### 3. (Optional but highly recommended) Install a NerdFont
 
 - In order to have the terminal (Windows Terminal for WSL, foot, Ghostty, Kitty, etc) of your choice being able to draw custom glyphs from Hades programs (yazi, lazygit, starship, etc) it is highly recommended to install any of the [NerdFont](https://www.nerdfonts.com/) of your choice. Hades cannot install fonts into your terminal application for you.
