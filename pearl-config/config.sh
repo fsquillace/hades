@@ -42,8 +42,7 @@ s() {
     }
 }
 
-[ -e /usr/bin/nvim ] && { export EDITOR=nvim; export VISUAL=nvim; }
-
+command -v nvim &> /dev/null && { export EDITOR=nvim; export VISUAL=nvim; }
 
 # https://wiki.archlinux.org/title/Install_Arch_Linux_on_WSL#Run_graphical_applications_with_WSLg
 export GALLIUM_DRIVER=d3d12

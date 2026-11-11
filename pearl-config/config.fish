@@ -52,11 +52,9 @@ function spf
     end
 end
 
-[ -e /usr/bin/nvim ]; and set -x EDITOR nvim
-[ -e /usr/bin/nvim ]; and set -x VISUAL nvim
-
+type -q nvim; and { set -x EDITOR nvim; set -x VISUAL nvim; }
 
 # https://wiki.archlinux.org/title/Install_Arch_Linux_on_WSL#Run_graphical_applications_with_WSLg
-set -g GALLIUM_DRIVER d3d12
-set -g LIBVA_DRIVER_NAME d3d12
+set -x GALLIUM_DRIVER d3d12
+set -x LIBVA_DRIVER_NAME d3d12
 # vim: ft=sh
