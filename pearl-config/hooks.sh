@@ -33,6 +33,9 @@ function post_install() {
     _fonts
 
     _herdr
+
+    _shell_doctor
+
     if ask "Proceed with Hermes setup/update? (may take some time)" "N"
     then
         _hermes
@@ -48,6 +51,18 @@ function post_install() {
 
 
     return 0
+}
+
+function _shell_doctor() {
+    local appname=shell-doctor
+    local giturl=https://github.com/fsquillace/shell-doctor.git
+
+    info "Installing or updating the $appname git repository..."
+    local app_root="${PEARL_PKGVARDIR}"
+    mkdir -p "$app_root"
+    install_or_update_git_repo $giturl "$app_root/$appname" ""
+
+    link_to_path "$app_root/$appname/bin/doctor"
 }
 
 function _pacman() {

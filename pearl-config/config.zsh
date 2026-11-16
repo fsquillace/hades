@@ -21,4 +21,6 @@ eval "$(mise activate zsh)"
 
 source /usr/share/aichat/integration.zsh
 
+source $PEARL_PKGVARDIR/shell-doctor/scripts/integration.zsh
+
 # vim: ft=sh

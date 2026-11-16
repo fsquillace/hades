@@ -57,4 +57,6 @@ type -q nvim; and { set -x EDITOR nvim; set -x VISUAL nvim; }
 # https://wiki.archlinux.org/title/Install_Arch_Linux_on_WSL#Run_graphical_applications_with_WSLg
 set -x GALLIUM_DRIVER d3d12
 set -x LIBVA_DRIVER_NAME d3d12
+
+source $PEARL_PKGVARDIR/shell-doctor/scripts/integration.fish
 # vim: ft=sh

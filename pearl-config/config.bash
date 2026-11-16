@@ -20,4 +20,6 @@ eval "$(mise activate bash)"
 
 source /usr/share/aichat/integration.bash
 
+source $PEARL_PKGVARDIR/shell-doctor/scripts/integration.bash
+
 # vim: ft=sh

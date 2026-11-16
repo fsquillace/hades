@@ -16,7 +16,7 @@ Setting up a useful AI-assisted development environment usually means installing
 
 - **Lightweight** — terminal-native tools only; herdr is a single Rust binary.
 - **Minimal** — a small, opinionated package set instead of a full distro.
-- **AI-first** — the four tools below share one workspace and one shell workflow.
+- **AI-first** — the five tools below share one workspace and one shell workflow.
 - **Arch-native** — packages come from the official repositories; the system stays simple to update.
 - **Omarchy extras, on demand** — install packages from the Omarchy repository with `pacboy` without adopting Omarchy itself.
 - **WSL-ready** — the same minimal platform runs inside an Arch Linux WSL distro on Windows, with graphical support packages installed automatically.
@@ -32,24 +32,25 @@ Setting up a useful AI-assisted development environment usually means installing
 | **opencode** | Primary coding agent. Reads, writes, and navigates your codebase directly from the terminal. | [opencode.ai](https://opencode.ai) · [GitHub](https://github.com/sst/opencode) |
 | **Hermes** | Planning, coordination, and automation. Long-running agent for schedules, subagents, and multi-step workflows. | [hermes-agent.nousresearch.com](https://hermes-agent.nousresearch.com) · [GitHub](https://github.com/NousResearch/hermes-agent) |
 | **aichat** | Natural language to shell commands. Ask for a command in plain English and run it without leaving the prompt. | [GitHub](https://github.com/sigoden/aichat) |
+| **Shell Doctor** | AI diagnosis for failed commands. When a command fails inside a herdr terminal, a prompt banner appears; run `doctor` to get the failed command, the root cause, and an ordered fix plan from opencode. Diagnosis only — it never runs commands or modifies files. | [GitHub](https://github.com/fsquillace/shell-doctor) |
 
 ### How they fit together
 
 ```
-                 ┌──────────────────────────────┐
-                 │            herdr             │
-                 │  workspace · panes · agents  │
-                 └───────────┬──────────────────┘
-                             │
-          ┌──────────────────┼──────────────────┐
-          │                  │                  │
-     ┌────▼─────┐      ┌─────▼─────┐      ┌─────▼─────┐
-     │ opencode │      │  Hermes   │      │  aichat   │
-     │  coding  │      │ planning  │      │   shell   │
-     └──────────┘      └───────────┘      └───────────┘
+                      ┌──────────────────────────────┐
+                      │            herdr             │
+                      │  workspace · panes · agents  │
+                      └───────────────┬──────────────┘
+                                      │
+       ┌───────────────────┬──────────┴────────┬───────────────────┐
+       │                   │                   │                   │
+┌──────▼───────┐    ┌──────▼───────┐    ┌──────▼───────┐    ┌──────▼───────┐
+│   opencode   │    │    Hermes    │    │    aichat    │    │ shell-doctor │
+│    coding    │    │   planning   │    │    shell     │    │ diagnostics  │
+└──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
 ```
 
-herdr is the home base. You run opencode for hands-on coding, Hermes for planning and unattended work, and aichat whenever you just need the right shell command.
+herdr is the home base. You run opencode for hands-on coding, Hermes for planning and unattended work, and aichat whenever you just need the right shell command. And when a command fails inside a herdr terminal, Shell Doctor reads the terminal transcript and asks opencode for the root cause and a fix plan — diagnosis only, it never touches your system.
 
 **opencode is the default coding agent, not a lock-in.** You can install and use any of the agents listed in the [Omarchy AI manual](https://omarchy.org/manual/ai/) — Claude Code, Codex, Google Antigravity, Amp, Crush, Cursor CLI, Qwen Code, and many more — and use them in place of, or alongside, opencode.
 
@@ -64,6 +65,7 @@ Installed automatically from [`packages/main`](packages/main):
 - **Base tools** — `base-devel`, `git`, `mise`, `yay`
 - **AI tools** — `aichat`, `opencode`, `herdr`, `herdr-app`
 - **Hermes** — offered as a prompt during installation; distributed through its own installer into `~/.hermes`.
+- **Shell Doctor** — cloned from its [Git repository](https://github.com/fsquillace/shell-doctor) into the Pearl var directory during installation; the `doctor` command is linked to `PATH` and its failure prompt hook is sourced automatically by Bash, Zsh, and Fish.
 
 ### Fonts
 
@@ -127,7 +129,7 @@ pearl install hades
 ```
 - Open a new shell or simply run `pearl-source` to the existing one to have all functions and variables initialized.
 
-The Pearl hook will, in order: refresh the Arch keyring → run a full system upgrade → install the core packages → install the WSL graphical packages (WSL only) → install the fonts and refresh the font cache → install the herdr configuration and keybindings and register the opencode integration → optionally set up Hermes (registering its herdr integration) → optionally install the productivity tools including Omarchy Neovim.
+The Pearl hook will, in order: refresh the Arch keyring → run a full system upgrade → install the core packages → install the WSL graphical packages (WSL only) → install the fonts and refresh the font cache → install the herdr configuration and keybindings and register the opencode integration → install Shell Doctor (git clone into the Pearl var directory, `doctor` linked to `PATH`) → optionally set up Hermes (registering its herdr integration) → optionally install the productivity tools including Omarchy Neovim.
 
 - (Optional but highly recommended) Install additional Pearl packages:
 
@@ -183,6 +185,9 @@ hermes
 # Generate a command from plain English and prompt for execution, revise and describe
 aiexec show disk usage grouped by folder
 
+# Diagnose the last failed command (inside a herdr terminal)
+doctor
+
 # Aichat shell integration: Ask for a shell command in plain language and press Alt-e, it will translate into a real command directly from shell
 find the largest files in this directory <Alt-e>
 
@@ -204,6 +209,17 @@ Any pre-existing configuration file is backed up first, so re-running `pearl upd
 
 From there, `herdr` opens the workspace, `ctrl+space` is your tmux-style prefix, and agents keep running when you detach or lose an SSH connection. On WSL, launch the graphical version with `herdr-app` — the alias routes it through XWayland to work around a WSLg Wayland bug.
 
+### Shell Doctor
+
+Shell Doctor closes the loop between herdr and opencode: it diagnoses failed commands through AI. Whenever a command exits non-zero inside a herdr terminal, the prompt hook prints a banner:
+
+```
+[Shell Doctor] Command failed (exit code: 1)
+  Diagnose with: doctor
+```
+
+Run `doctor` and it reads the terminal transcript with `hc read`, finds the last failure, and asks opencode for the failed command, the root cause, and an ordered fix plan. It is diagnosis only — Shell Doctor never runs commands or modifies files, and outside a herdr terminal it stays silent. Tune it with `SHELL_DOCTOR_AGENT`, `SHELL_DOCTOR_MODEL`, `SHELL_DOCTOR_LINES`, and `SHELL_DOCTOR_MAX_BYTES` (see the [Shell Doctor README](https://github.com/fsquillace/shell-doctor)); it uses your existing opencode credentials, so no extra setup is needed.
+
 ---
 
 ## Shell integration
@@ -213,6 +229,7 @@ Hades configures Bash, Zsh, and Fish on first shell start:
 - Activates `mise` so globally installed tools such as `herdr` are on `PATH`.
 - Initializes `starship`, `zoxide`, and `fzf` when those packages are present.
 - Loads the official aichat shell integration.
+- Sources the Shell Doctor prompt hook: on a non-zero exit inside a herdr terminal it prints a `[Shell Doctor] Command failed` banner, and the `doctor` command diagnoses the failure with opencode.
 - Adds `~/.local/bin` to `PATH`.
 - Sources the shared aliases in [`configs/aliases`](configs/aliases).
 
